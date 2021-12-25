@@ -67,7 +67,10 @@ std::vector<std::string> arithmetic::is_expression_is_correct(const std::string&
 		if (!(is_digit(_str[0]) || is_letter(_str[0]) || _str[0] == '(' || _str[0] == '-')) {
 			errors.push_back("[-] Expression can start only with digits or opening bracket or unary minus\n");
 		}
-		if (is_operator(_str[i])) {
+		if (_str[0] == '-' && is_operator(_str[1])) {
+			errors.push_back("[-] There are should not be an operator afrer unary minus: invalid position - " + std::to_string(1) + "\n");
+		}
+		if (is_operator(_str[i]) && i != 0) {
 			if (_str[i + 1] == '+' || _str[i + 1] == '*' || _str[i + 1] == '/') {
 				errors.push_back("[-] There are should not be an operator afrer operator: invalid position - " + std::to_string(i + 2) + "\n");
 			}
@@ -79,6 +82,18 @@ std::vector<std::string> arithmetic::is_expression_is_correct(const std::string&
 			}
 			continue;
 		}
+		if (is_digit(_str[i]) && is_letter(_str[i + 1]) || is_letter(_str[i]) && is_digit(_str[i + 1])) {
+			errors.push_back("[-] Missing operator between digit and variable: invalid position - " + std::to_string(i) + "\n");
+		}
+		if (is_letter(_str[i]) && is_letter(_str[i + 1])) {
+			errors.push_back("[-] Missing operator between variables: invalid position - " + std::to_string(i) + "\n");
+		}
+		if (_str[i] == '(' && _str[i + 1] == ')') {
+			errors.push_back("[-] There are should not be an opening bracket before closing bracket: invalid position - " + std::to_string(i + 1) + "\n");
+		}
+		if (_str[i] == ')' && _str[i + 1] == '(') {
+			errors.push_back("[-] Did not expect opening bracket after a closing bracker: invalid position - " + std::to_string(i + 1) + "\n");
+		}
 		if (is_dot(_str[_str.length() - 1])) {
 			errors.push_back("[-] Expression shoud be ended with a digit or a closing bracket\n");
 		}
@@ -88,8 +103,8 @@ std::vector<std::string> arithmetic::is_expression_is_correct(const std::string&
 		if (_str[_str.length() - 1] == '(') {
 			errors.push_back("[-] Expect a number after the opening bracket: invalid position - " + std::to_string(_str.length()) + "\n");
 		}
-		if (_str[i] == '(' && (_str[i + 1] == '+' || _str[i + 1] == '/')) {
-			errors.push_back(" [-] Didn't expect '+' or '/' after opening bracket \n");
+		if (_str[i] == '(' && (_str[i + 1] == '+' || _str[i + 1] == '/' || _str[i + 1] == '*')) {
+			errors.push_back(" [-] Didn't expect '+' or '/' or '*' after opening bracket \n");
 		}
 		if (_str[i] == '(') {
 			op_brackets++;
@@ -99,6 +114,25 @@ std::vector<std::string> arithmetic::is_expression_is_correct(const std::string&
 		}
 		if (is_digit(_str[i]) && _str[i + 1] == '(') {
 			errors.push_back("[-] Opening bracket after a digit were not expected\n");
+		}
+		if (is_dot(_str[i])) {
+			if (is_dot(_str[i + 1])) {
+				errors.push_back("[-] There are should not be a dot afrer a dot: invalid position - " + std::to_string(i + 2) + "\n");
+			}
+		}
+		if (is_digit(_str[i])) {
+			if (_str[i + 1] == '(')
+			{
+				errors.push_back("[-] There are should not be a bracket afrer a number: invalid position - " + std::to_string(i + 2) + "\n");
+			}
+		}
+		if (is_dot(_str[i])) {
+			for (size_t k = i+1;  is_digit(_str[k])&& k < _str.length(); ++k)
+			{
+				if (is_dot(_str[k+1])) {
+					errors.push_back("[-] There are should not be two dots in number: invalid position - " + std::to_string(k+2) + "\n");
+				}
+			}
 		}
 	}
 	if (op_brackets > c_brackets) {
@@ -114,8 +148,8 @@ std::vector<std::string> arithmetic::is_expression_is_correct(const std::string&
 }
 
 std::string arithmetic::convert() {
-	/* std::string expression is an output(operands) stack */
-	/* stack<char> _operators_stack is an operators stack */
+	 //std::string expression is an output(operands) stack 
+	 //stack<char> _operators_stack is an operators stack 
 	stack<char> _operators_stack;
 	std::string expression;
 	std::string entered_string = delete_spaces();
